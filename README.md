@@ -12,20 +12,28 @@ This repository documents the LiDAR processing and analysis workflow for my unde
 ```
 TAAL-LIDAR-UNDERSTORY/
 │
-├── data/                        # All LiDAR-related input/output data
-│   ├── tiles/                  # Tiled 500m x 500m versions of merged .laz
-│   ├── ground_tiles/           # Ground-classified tiles (after lasground)
-│   ├── normalized_tiles/       # Height-normalized tiles (after lasheight)
-│   ├── normalized_las/         # Uncompressed .las files for Python compatibility
-│   ├── voxel_cover_metrics.csv # Output CSV with voxel cover metrics per tile
-│   └── (original .laz files)   # The 4 downloaded Taal tiles
+├── data/                             # All LiDAR-related input/output data
+│   ├── tiles/                       # Tiled 500m x 500m versions of merged .laz
+│   ├── ground_tiles/                # Ground-classified tiles (after lasground)
+│   ├── normalized_tiles/            # Height-normalized tiles (after lasheight)
+│   ├── normalized_las/              # Uncompressed .las files for Python compatibility
+│   ├── voxel_cover_metrics.csv      # Output: voxel cover (VOX1m)
+│   ├── fractional_cover_metrics.csv # Output: fractional cover
+│   ├── normalized_cover_metrics.csv # Output: normalized cover
+│   ├── lad_metrics.csv              # Output: leaf area density (mean in 0.5–3.5m)
+│   ├── canopy_cover_metrics_dbh.csv # Output: DBH-standard canopy cover
+│   └── (original .laz files)        # The 4 downloaded Taal tiles
 │
-├── scripts/                    # Python scripts for metric extraction
-│   └── compute_voxel_cover.py
+├── scripts/                         # Python scripts for metric extraction
+│   ├── compute_voxel_cover_debug_fixed.py
+│   ├── compute_fractional_cover.py
+│   ├── compute_normalized_cover.py
+│   ├── compute_leaf_area_density.py
+│   └── compute_canopy_cover_dbh_standard.py
 │
-├── env/                        # Python virtual environment (optional)
+├── env/                             # Python virtual environment (optional)
 │
-└── README.md                   # Documentation for the project
+└── README.md                        # Documentation for the project
 ```
 
 ## 🧮 LAStools Preprocessing Commands
@@ -59,16 +67,18 @@ mkdir data\normalized_las
 las2las -i data\normalized_tiles\*.laz -olas -odir data\normalized_las
 ```
 
-> At this point, your normalized LiDAR tiles are ready for analysis using Python (`laspy`, `numpy`, etc.) from `data\normalized_las\`.
-
 ## 🧭 Workflow Diagram
 
 ```mermaid
 graph TD
-  A[Start: 4 Original .laz Tiles] --> B[Merge Tiles - lasmerge]
-  B --> C[Tile to 500m x 500m with Buffer - lastile]
-  C --> D[Classify Ground Points - lasground]
-  D --> E[Normalize Height Above Ground - lasheight]
-  E --> F[Ready for Metric Extraction in - Python]
-  F --> G[Ready for Metric Extraction in Python]
+  A[Start: 4 Original .laz Tiles] --> B[Merge Tiles ]
+  B --> C[Tile to 500m x 500m with Buffer ]
+  C --> D[Classify Ground Points ]
+  D --> E[Normalize Height Above Ground ]
+  E --> F[Convert .laz to .las ]
+  F --> G[VOX1m: Voxel Cover ]
+  F --> H[FRAC: Fractional Cover ]
+  F --> I[NORM: Normalized Cover ]
+  F --> J[LAD: Leaf Area Density ]
+  F --> K[Canopy Cover DBH ]
 ```
