@@ -5,26 +5,27 @@ This repository documents the LiDAR processing and analysis workflow for my unde
 
 ## 🗺️ Study Area
 - **Location**: Taal Volcano, Batangas, Philippines
-- **Data**: Four 1km x 1km .laz tiles from open LiDAR dataset
+- **Data**: Four 1km x 1km .laz tiles from the Taal open LiDAR dataset
 
-## 📦 Folder Structure
+## 📁 Folder Structure
 
 ```
 TAAL-LIDAR-UNDERSTORY/
 │
-├── data/ # All LiDAR-related input/output data
-│ ├── tiles/ # Tiled 500m x 500m versions of merged .laz
-│ ├── ground_tiles/ # Ground-classified tiles (after lasground)
-│ ├── normalized_tiles/ # Height-normalized tiles (after lasheight)
-│ ├── voxel_cover_metrics.csv # Output table with voxel cover per tile
-│ └── (original .laz files) # 4 downloaded Taal tiles
+├── data/                        # All LiDAR-related input/output data
+│   ├── tiles/                  # Tiled 500m x 500m versions of merged .laz
+│   ├── ground_tiles/           # Ground-classified tiles (after lasground)
+│   ├── normalized_tiles/       # Height-normalized tiles (after lasheight)
+│   ├── normalized_las/         # Uncompressed .las files for Python compatibility
+│   ├── voxel_cover_metrics.csv # Output CSV with voxel cover metrics per tile
+│   └── (original .laz files)   # The 4 downloaded Taal tiles
 │
-├── scripts/ # Python scripts for metric extraction
-│ └── compute_voxel_cover.py
+├── scripts/                    # Python scripts for metric extraction
+│   └── compute_voxel_cover.py
 │
-├── env/ # Python virtual environment (optional)
+├── env/                        # Python virtual environment (optional)
 │
-└── README.md # Documentation for the project
+└── README.md                   # Documentation for the project
 ```
 
 ## 🧮 LAStools Preprocessing Commands
@@ -52,9 +53,13 @@ mkdir data\normalized_tiles
 lasheight -i data\ground_tiles\*.laz -replace_z -odir data\normalized_tiles -olaz
 ```
 
-> ✅ At this point, the data is fully normalized and ready for LiDAR-derived metric computation in Python (e.g., Voxel Cover, Fractional Cover, etc.).
+### 5. Convert .laz to .las for Python Compatibility
+```bash
+mkdir data\normalized_las
+las2las -i data\normalized_tiles\*.laz -olas -odir data\normalized_las
+```
 
----
+> At this point, your normalized LiDAR tiles are ready for analysis using Python (`laspy`, `numpy`, etc.) from `data\normalized_las\`.
 
 ## 🧭 Workflow Diagram
 
@@ -65,4 +70,5 @@ graph TD
   C --> D[Classify Ground Points - lasground]
   D --> E[Normalize Height Above Ground - lasheight]
   E --> F[Ready for Metric Extraction in - Python]
+  F --> G[Ready for Metric Extraction in Python]
 ```
