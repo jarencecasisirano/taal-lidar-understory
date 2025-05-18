@@ -10,13 +10,21 @@ This repository documents the LiDAR processing and analysis workflow for my unde
 ## 📦 Folder Structure
 
 ```
-data/
+TAAL-LIDAR-UNDERSTORY/
 │
-├── tiles/                 # Tiled versions of the merged dataset
-├── ground_tiles/          # Ground-classified point clouds per tile
-├── normalized_tiles/      # Height-normalized tiles (Z = height above ground)
-├── merged_taal.laz        # Merged .laz from original 4 tiles
-└── (original .laz tiles)  # The 4 raw .laz tiles from Taal
+├── data/ # All LiDAR-related input/output data
+│ ├── tiles/ # Tiled 500m x 500m versions of merged .laz
+│ ├── ground_tiles/ # Ground-classified tiles (after lasground)
+│ ├── normalized_tiles/ # Height-normalized tiles (after lasheight)
+│ ├── voxel_cover_metrics.csv # Output table with voxel cover per tile
+│ └── (original .laz files) # 4 downloaded Taal tiles
+│
+├── scripts/ # Python scripts for metric extraction
+│ └── compute_voxel_cover.py
+│
+├── env/ # Python virtual environment (optional)
+│
+└── README.md # Documentation for the project
 ```
 
 ## 🧮 LAStools Preprocessing Commands
