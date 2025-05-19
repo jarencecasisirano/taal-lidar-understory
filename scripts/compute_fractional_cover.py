@@ -5,8 +5,8 @@ import pandas as pd
 from pathlib import Path
 
 # Paths
-input_dir = Path("data/normalized_las")
-output_csv = Path("data/fractional_cover_metrics.csv")
+input_dir = Path("data/normalized_las_100m")
+output_csv = Path("data/fractional_cover_metrics_100m.csv")
 
 # Height range for understory
 min_height = 0.5
