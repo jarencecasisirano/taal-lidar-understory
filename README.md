@@ -1,81 +1,79 @@
 
-# LiDAR Understory Mapping Workflow (100m Tile Resolution)
+# Taal LiDAR Understory Mapping – Final Workflow
 
-This repository documents the processing and analysis workflow for a tile-based LiDAR vegetation structure assessment over Taal Volcano, Philippines. It replicates the core methodology of Venier et al. (2019), extended with a novel integration of NDVI as a remote proxy for field validation.
+This project assesses the potential of NDVI to reflect forest structural metrics derived from LiDAR, with a focus on understory complexity. The workflow spans from raw `.laz` files to full metric comparison and regression analysis.
 
-## 🗺️ Study Area
-- **Location**: Taal Volcano, Batangas, Philippines
-- **Tile Size**: 100m × 100m
-- **Data**: Airborne LiDAR (.laz), open-access NDVI raster (to be integrated)
+---
 
-## 📁 Folder Structure
+## 🧱 Folder Structure
 
 ```
 TAAL-LIDAR-UNDERSTORY/
-│
 ├── data/
-│   ├── tiles_100m/                        # 100m × 100m tiles of merged .laz
-│   ├── ground_tiles_100m/                 # Ground-classified .laz tiles
-│   ├── normalized_tiles_100m/             # Height-normalized .laz tiles
-│   ├── normalized_las_100m/               # Converted to .las for Python processing
-│   ├── voxel_cover_metrics_100m.csv       # Voxel cover
-│   ├── fractional_cover_metrics_100m.csv  # Fractional cover
-│   ├── normalized_cover_metrics_100m.csv  # Normalized cover
-│   ├── lad_metrics_100m.csv               # Leaf area density (0.5–3.5m)
-│   ├── canopy_cover_metrics_dbh_100m.csv  # Canopy cover (DBH-based, >1.37m)
-│   └── all_metrics_100m.csv               # Merged CSV of all metrics
-│
+│   ├── normalized_las_100m/
+│   ├── ndvi_mar_may_2017.tif
+│   ├── tiles_100m.shp
+│   ├── voxel_cover_metrics_100m.csv
+│   ├── fractional_cover_metrics_100m.csv
+│   ├── normalized_cover_metrics_100m.csv
+│   ├── lad_metrics_100m.csv
+│   ├── canopy_cover_metrics_dbh_100m.csv
+│   ├── all_metrics_100m.csv
+│   ├── ndvi_tile_stats_2017.csv
+│   ├── all_metrics_with_ndvi_100m.csv
+│   └── plots/
 ├── scripts/
-│   ├── compute_voxel_cover.py
-│   ├── compute_fractional_cover.py
-│   ├── compute_normalized_cover.py
-│   ├── compute_leaf_area_density.py
-│   ├── compute_canopy_cover.py
-│   └── merge_all_metrics.py
-│
-├── env/                                   # Python virtual environment (optional)
-│
+│   └── [processing + plotting scripts]
 └── README.md
 ```
 
-## 🧮 LAStools Preprocessing Commands (100m Tiles)
+---
 
-```bash
-# 1. Tile the merged dataset
-mkdir data\tiles_100m
-lastile -i data\merged_taal.laz -tile_size 100 -buffer 20 -o data\tiles_100m\tile.laz
+## 🔧 LiDAR Preprocessing (LAStools)
 
-# 2. Classify ground points
-mkdir data\ground_tiles_100m
-lasground -i data\tiles_100m\*.laz -wilderness -odir data\ground_tiles_100m -olaz
+1. **Merge .laz tiles**
+2. **Tile into 100m × 100m grids**
+3. **Classify ground points**
+4. **Normalize height**
+5. **Convert to .las format**
 
-# 3. Normalize height
-mkdir data\normalized_tiles_100m
-lasheight -i data\ground_tiles_100m\*.laz -replace_z -odir data\normalized_tiles_100m -olaz
+---
 
-# 4. Convert to .las for Python compatibility
-mkdir data\normalized_las_100m
-las2las -i data\normalized_tiles_100m\*.laz -olas -odir data\normalized_las_100m
-```
+## 📊 LiDAR Metrics Computed (Python)
 
-## 🧭 Workflow Diagram
+- **Voxel Cover**
+- **Fractional Cover**
+- **Normalized Cover**
+- **Leaf Area Density (LAD)**
+- **Canopy Cover (DBH > 1.37m)**
 
-```mermaid
-graph TD
-  A[merged_taal.laz] --> B[Tile 100m]
-  B --> C[Ground Classification]
-  C --> D[Height Normalization]
-  D --> E[Convert to .las]
-  E --> F1[Compute Voxel Cover]
-  E --> F2[Compute Fractional Cover]
-  E --> F3[Compute Normalized Cover]
-  E --> F4[Compute Leaf Area Density]
-  E --> F5[Compute Canopy Cover DBH]
-  F1 --> G[Merged All Metrics CSV]
-  F2 --> G
-  F3 --> G
-  F4 --> G
-  F5 --> G
-```
+Each metric was computed tile-by-tile and saved as individual CSVs, then merged into `all_metrics_100m.csv`.
 
-> Next step: Integrate Sentinel-2 NDVI to compare with LiDAR-derived metrics.
+---
+
+## 🛰️ NDVI Acquisition and Integration
+
+- Downloaded March–May 2017 NDVI (Sentinel-2 TOA) via GEE
+- Exported and visualized in QGIS
+- Computed **zonal mean NDVI per tile**
+- Joined with LiDAR metrics into `all_metrics_with_ndvi_100m.csv`
+
+---
+
+## 📈 Analysis and Visualization
+
+- **Scatterplots and Correlation**: NDVI vs each LiDAR metric
+- **Regression Model**: Predicted NDVI from all five LiDAR metrics
+- **R² = 0.822**, confirming NDVI aligns strongly with canopy, but weakly with understory metrics
+
+All plots and figures were saved to `data/plots/`.
+
+---
+
+## 🧠 Conclusion
+
+This study demonstrates that:
+- NDVI is strongly linked to **canopy structure**
+- NDVI **fails to capture** detailed vertical or understory complexity
+- LiDAR remains essential for structural vegetation mapping
+
