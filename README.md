@@ -1,84 +1,81 @@
 
-# LiDAR Understory Mapping Workflow (Taal Volcano Dataset)
+# LiDAR Understory Mapping Workflow (100m Tile Resolution)
 
-This repository documents the LiDAR processing and analysis workflow for my undergraduate project, focused on evaluating LiDAR-derived understory structure metrics and their relationship with NDVI in a tropical forest setting.
+This repository documents the processing and analysis workflow for a tile-based LiDAR vegetation structure assessment over Taal Volcano, Philippines. It replicates the core methodology of Venier et al. (2019), extended with a novel integration of NDVI as a remote proxy for field validation.
 
 ## 🗺️ Study Area
 - **Location**: Taal Volcano, Batangas, Philippines
-- **Data**: Four 1km x 1km .laz tiles from the Taal open LiDAR dataset
+- **Tile Size**: 100m × 100m
+- **Data**: Airborne LiDAR (.laz), open-access NDVI raster (to be integrated)
 
 ## 📁 Folder Structure
 
 ```
 TAAL-LIDAR-UNDERSTORY/
 │
-├── data/                             # All LiDAR-related input/output data
-│   ├── tiles/                       # Tiled 500m x 500m versions of merged .laz
-│   ├── ground_tiles/                # Ground-classified tiles (after lasground)
-│   ├── normalized_tiles/            # Height-normalized tiles (after lasheight)
-│   ├── normalized_las/              # Uncompressed .las files for Python compatibility
-│   ├── voxel_cover_metrics.csv      # Output: voxel cover (VOX1m)
-│   ├── fractional_cover_metrics.csv # Output: fractional cover
-│   ├── normalized_cover_metrics.csv # Output: normalized cover
-│   ├── lad_metrics.csv              # Output: leaf area density (mean in 0.5–3.5m)
-│   ├── canopy_cover_metrics_dbh.csv # Output: DBH-standard canopy cover
-│   └── (original .laz files)        # The 4 downloaded Taal tiles
+├── data/
+│   ├── tiles_100m/                        # 100m × 100m tiles of merged .laz
+│   ├── ground_tiles_100m/                 # Ground-classified .laz tiles
+│   ├── normalized_tiles_100m/             # Height-normalized .laz tiles
+│   ├── normalized_las_100m/               # Converted to .las for Python processing
+│   ├── voxel_cover_metrics_100m.csv       # Voxel cover
+│   ├── fractional_cover_metrics_100m.csv  # Fractional cover
+│   ├── normalized_cover_metrics_100m.csv  # Normalized cover
+│   ├── lad_metrics_100m.csv               # Leaf area density (0.5–3.5m)
+│   ├── canopy_cover_metrics_dbh_100m.csv  # Canopy cover (DBH-based, >1.37m)
+│   └── all_metrics_100m.csv               # Merged CSV of all metrics
 │
-├── scripts/                         # Python scripts for metric extraction
-│   ├── compute_voxel_cover_debug_fixed.py
+├── scripts/
+│   ├── compute_voxel_cover.py
 │   ├── compute_fractional_cover.py
 │   ├── compute_normalized_cover.py
 │   ├── compute_leaf_area_density.py
-│   └── compute_canopy_cover_dbh_standard.py
+│   ├── compute_canopy_cover.py
+│   └── merge_all_metrics.py
 │
-├── env/                             # Python virtual environment (optional)
+├── env/                                   # Python virtual environment (optional)
 │
-└── README.md                        # Documentation for the project
+└── README.md
 ```
 
-## 🧮 LAStools Preprocessing Commands
+## 🧮 LAStools Preprocessing Commands (100m Tiles)
 
-### 1. Merge Tiles
 ```bash
-lasmerge -i data\tile1.laz data\tile2.laz data\tile3.laz data\tile4.laz -o data\merged_taal.laz
-```
+# 1. Tile the merged dataset
+mkdir data\tiles_100m
+lastile -i data\merged_taal.laz -tile_size 100 -buffer 20 -o data\tiles_100m\tile.laz
 
-### 2. Tile the Merged Dataset into 500m x 500m Blocks
-```bash
-mkdir data\tiles
-lastile -i data\merged_taal.laz -tile_size 500 -buffer 20 -o data\tiles\tile.laz
-```
+# 2. Classify ground points
+mkdir data\ground_tiles_100m
+lasground -i data\tiles_100m\*.laz -wilderness -odir data\ground_tiles_100m -olaz
 
-### 3. Classify Ground Points for Each Tile
-```bash
-mkdir data\ground_tiles
-lasground -i data\tiles\*.laz -wilderness -odir data\ground_tiles -olaz
-```
+# 3. Normalize height
+mkdir data\normalized_tiles_100m
+lasheight -i data\ground_tiles_100m\*.laz -replace_z -odir data\normalized_tiles_100m -olaz
 
-### 4. Normalize Height Above Ground for Each Tile
-```bash
-mkdir data\normalized_tiles
-lasheight -i data\ground_tiles\*.laz -replace_z -odir data\normalized_tiles -olaz
-```
-
-### 5. Convert .laz to .las for Python Compatibility
-```bash
-mkdir data\normalized_las
-las2las -i data\normalized_tiles\*.laz -olas -odir data\normalized_las
+# 4. Convert to .las for Python compatibility
+mkdir data\normalized_las_100m
+las2las -i data\normalized_tiles_100m\*.laz -olas -odir data\normalized_las_100m
 ```
 
 ## 🧭 Workflow Diagram
 
 ```mermaid
 graph TD
-  A[Start: 4 Original .laz Tiles] --> B[Merge Tiles ]
-  B --> C[Tile to 500m x 500m with Buffer ]
-  C --> D[Classify Ground Points ]
-  D --> E[Normalize Height Above Ground ]
-  E --> F[Convert .laz to .las ]
-  F --> G[VOX1m: Voxel Cover ]
-  F --> H[FRAC: Fractional Cover ]
-  F --> I[NORM: Normalized Cover ]
-  F --> J[LAD: Leaf Area Density ]
-  F --> K[Canopy Cover DBH ]
+  A[merged_taal.laz] --> B[Tile 100m]
+  B --> C[Ground Classification]
+  C --> D[Height Normalization]
+  D --> E[Convert to .las]
+  E --> F1[Compute Voxel Cover]
+  E --> F2[Compute Fractional Cover]
+  E --> F3[Compute Normalized Cover]
+  E --> F4[Compute Leaf Area Density]
+  E --> F5[Compute Canopy Cover DBH]
+  F1 --> G[Merged All Metrics CSV]
+  F2 --> G
+  F3 --> G
+  F4 --> G
+  F5 --> G
 ```
+
+> Next step: Integrate Sentinel-2 NDVI to compare with LiDAR-derived metrics.
