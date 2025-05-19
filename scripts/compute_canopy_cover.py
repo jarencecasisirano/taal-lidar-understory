@@ -5,8 +5,8 @@ import pandas as pd
 from pathlib import Path
 
 # Paths
-input_dir = Path("data/normalized_las")
-output_csv = Path("data/canopy_cover_metrics_dbh.csv")
+input_dir = Path("data/normalized_las_100m")
+output_csv = Path("data/canopy_cover_metrics_dbh_100m.csv")
 
 # Canopy height threshold based on DBH standard
 canopy_cutoff = 1.37

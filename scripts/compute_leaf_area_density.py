@@ -6,8 +6,8 @@ from pathlib import Path
 import math
 
 # Input/output paths
-input_dir = Path("data/normalized_las")
-output_csv = Path("data/lad_metrics.csv")
+input_dir = Path("data/normalized_las_100m")
+output_csv = Path("data/lad_metrics_100m.csv")
 
 # Binning parameters
 bin_size = 1.0
