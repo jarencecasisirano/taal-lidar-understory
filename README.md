@@ -52,28 +52,47 @@ TAAL-LIDAR-UNDERSTORY/
 
 ```mermaid
 graph TD
-  A[Raw LAZ tiles] --> B[Merge LAZ]
-  B --> C[Tile to 100m blocks]
-  C --> D[Ground classification]
-  D --> E[Height normalization]
-  E --> F[Convert to LAS]
-  F --> G1[Compute Voxel Cover]
-  F --> G2[Compute Fractional Cover]
-  F --> G3[Compute Normalized Cover]
-  F --> G4[Compute LAD]
-  F --> G5[Compute Canopy Cover]
-  G1 --> H[Merge all metrics CSV]
-  G2 --> H
-  G3 --> H
-  G4 --> H
-  G5 --> H
-  H --> I[Get NDVI from GEE]
-  I --> J[Zonal stats per tile]
-  J --> K[Merge NDVI with LiDAR metrics]
-  K --> L1[Scatterplots + Correlations]
-  K --> L2[NDVI Regression from LiDAR]
-  K --> L3[PCA of LiDAR Metrics]
-  L3 --> L4[NDVI Regression from PC1 + PC2]
+
+%% Left column - NDVI processing
+NDVI0[NDVI Processing]
+NDVI1[Sentinel-2 TOA Imagery - 2017]
+NDVI2[NDVI Computation]
+NDVI3[Zonal Stats per Tile]
+
+NDVI0 --> NDVI1 --> NDVI2 --> NDVI3
+
+%% Right column - LiDAR processing
+L0[LIDAR Data Acquisition]
+L1[Tile Extraction - 100m x 100m]
+L2[Ground Classification - lasground]
+L3[Height Normalization - lasheight]
+L4[LIDAR Metric Computation - Python]
+L5a[Canopy Cover - DBH threshold]
+L5b[Voxel Cover - 0.5 to 3.5 m]
+L5c[Fractional Cover]
+L5d[Normalized Cover]
+L5e[Leaf Area Density - LAD]
+
+L0 --> L1 --> L2 --> L3 --> L4
+L4 --> L5a
+L4 --> L5b
+L4 --> L5c
+L4 --> L5d
+L4 --> L5e
+
+%% Join and analysis
+JOIN[Join NDVI and LIDAR Metrics]
+NDVI3 --> JOIN
+L5a --> JOIN
+L5b --> JOIN
+L5c --> JOIN
+L5d --> JOIN
+L5e --> JOIN
+
+JOIN --> CORR[Scatterplots and Correlation Analysis]
+JOIN --> MLR[Multiple Linear Regression]
+JOIN --> PCA[Principal Component Analysis - PCA]
+PCA --> PCAreg[NDVI Regression using PC1 and PC2]
 ```
 
 ---
