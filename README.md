@@ -93,6 +93,10 @@ JOIN --> CORR[Scatterplots and Correlation Analysis]
 JOIN --> MLR[Multiple Linear Regression]
 JOIN --> PCA[Principal Component Analysis - PCA]
 PCA --> PCAreg[NDVI Regression using PC1 and PC2]
+
+%% NEW - Train/Test evaluation
+MLR --> MLRval[Train-Test NDVI Prediction using LiDAR Metrics]
+PCAreg --> PCAval[Train-Test NDVI Prediction using PCA]
 ```
 
 ---
